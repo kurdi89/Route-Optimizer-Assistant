@@ -1,0 +1,47 @@
+# Changelog
+
+## [0.1.0] - 2024-03-19
+### Changed
+- Replaced Mapbox with Leaflet + OpenStreetMap
+- Added marker management (add/remove/drag)
+- Added route visualization using Leaflet Routing Machine
+- Added test points feature
+- Enhanced UI with shadcn/ui components and styling
+- Added proper Tailwind configuration
+- Improved modal and button designs
+- Added dark mode support
+- Enhanced chat message styling
+
+### Added
+- Initial project structure setup
+- Basic frontend UI with TailwindCSS and Alpine.js
+- Express server setup with basic routing
+- SQLite database initialization with core tables
+- Basic route optimization endpoint
+- Mapbox integration for route visualization
+- Chat interface for AI interaction
+
+### Technical Details
+- Created project directory structure
+- Implemented SQLite database schema
+- Set up Express server with CORS and basic middleware
+- Added frontend with responsive design
+- Integrated Mapbox GL JS for map visualization
+- Added AI chat interface with Alpine.js
+- Implemented basic route optimization logic
+
+### Enhanced
+- Added multiple map styles (Basic, Streets, Light, Dark, Satellite)
+- Added dark mode support for map and UI
+- Removed click-to-add-marker functionality
+- Added map style preferences storage
+- Added sophisticated route optimization logic
+- Implemented persistent instructions handling
+- Added fleet management endpoints
+- Enhanced AI prompt engineering for better route planning
+- Added detailed route plan storage in database
+- Improved error handling and response formatting
+- Added outlet management with map icons
+- Added random order generation (3000 orders)
+- Fixed settings modal display
+- Added batch processing for large order generation

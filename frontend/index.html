@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Optimizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map-container {
+            height: 100%;
+            width: 100%;
+        }
+        .message {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .message.user {
+            background-color: #e5e7eb;
+            margin-left: auto;
+            max-width: 80%;
+        }
+        .message.ai {
+            background-color: #f3f4f6;
+            margin-right: auto;
+            max-width: 80%;
+        }
+        .message.system {
+            background-color: #dbeafe;
+            text-align: center;
+        }
+        .message.error {
+            background-color: #fee2e2;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="root" class="dark:bg-gray-900">
+        <div class="flex h-screen">
+            <div class="flex-1 relative" id="map-container"></div>
+            <div class="w-1/3 p-4 dark:bg-gray-900" id="chat-container"></div>
+        </div>
+    </div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="/app.js"></script>
+</body>
+</html> 

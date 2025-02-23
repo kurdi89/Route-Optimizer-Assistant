@@ -1,0 +1,628 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+#root {
+    height: 100vh;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+ 
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium
+           ring-offset-background transition-colors focus-visible:outline-none
+           focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50 select-none
+           h-9 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-md text-sm font-medium
+           ring-offset-background transition-colors focus-visible:outline-none
+           focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+           disabled:pointer-events-none disabled:opacity-50 select-none
+           h-9 px-4 py-2 bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .input-field {
+    @apply flex h-9 w-full rounded-md border border-input bg-background px-3 py-1
+           text-sm ring-offset-background file:border-0 file:bg-transparent
+           file:text-sm file:font-medium placeholder:text-muted-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
+           focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .select-field {
+    @apply h-9 rounded-md border border-input bg-background px-3 py-1 text-sm
+           ring-offset-background focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-icon {
+    @apply p-2 rounded-lg transition-colors;
+    @apply hover:bg-gray-100 dark:hover:bg-gray-700;
+  }
+}
+
+/* Chat container styles */
+#chat-messages {
+    scroll-behavior: smooth;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.message {
+    @apply rounded-lg p-4 text-sm;
+}
+
+.message.user {
+    @apply bg-primary/10 text-foreground ml-auto;
+}
+
+.message.ai {
+    @apply bg-muted text-foreground mr-auto;
+}
+
+.message.system {
+    @apply bg-accent text-accent-foreground mx-auto;
+}
+
+.message.error {
+    @apply bg-destructive/10 text-destructive-foreground mx-auto;
+}
+
+.action-button {
+    @apply mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg 
+           hover:bg-indigo-700 transition-colors cursor-pointer;
+}
+
+#map {
+    width: 100%;
+    height: calc(100vh - 150px);
+    @apply rounded-lg shadow-lg;
+}
+
+.outlet-icon {
+    font-size: 24px;
+    text-align: center;
+    line-height: 40px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.order-icon {
+    font-size: 20px;
+    text-align: center;
+    line-height: 30px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Add this to fix the settings modal */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Map Styles - Light Mode */
+.map-light-streets {
+    filter: saturate(0.9) brightness(1.02);
+}
+
+.map-light-minimal {
+    filter: grayscale(0.2) brightness(1.05) contrast(0.95);
+}
+
+/* Map Styles - Dark Mode */
+.map-dark-streets {
+    filter: brightness(0.85) contrast(1.1) saturate(0.9);
+}
+
+.map-dark-minimal {
+    filter: brightness(0.75) contrast(1.3) saturate(0.8);
+}
+
+/* Map Styles - Satellite */
+.map-satellite {
+    filter: contrast(1.1) brightness(1.1) saturate(1.1);
+}
+
+/* Map Styles - TracesTrack */
+.map-tracestrack-topo {
+    filter: saturate(1.1) contrast(1.05) brightness(1.02);
+}
+
+/* Custom Map Controls */
+.leaflet-control-container .leaflet-control {
+    @apply bg-white dark:bg-gray-800 shadow-lg rounded-lg;
+}
+
+.leaflet-control-zoom a {
+    @apply text-gray-700 dark:text-gray-200;
+}
+
+/* Map Labels and Text */
+.leaflet-popup-content-wrapper {
+    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100;
+}
+
+.leaflet-popup-tip {
+    @apply bg-white dark:bg-gray-800;
+}
+
+/* Z-index layers */
+.leaflet-container {
+    z-index: 0;
+}
+
+.leaflet-control-container {
+    z-index: 1;
+}
+
+.modal-backdrop {
+    z-index: 9999;
+}
+
+.modal-content {
+    @apply bg-background rounded-lg border shadow-lg;
+}
+
+.modal-header {
+    @apply flex items-center justify-between p-6 border-b;
+}
+
+.modal-title {
+    @apply text-lg font-semibold leading-none tracking-tight;
+}
+
+.modal-body {
+    @apply p-6 space-y-4;
+}
+
+/* Flow Animation */
+@keyframes flowAnimation {
+    0% {
+        stroke-dashoffset: 20;
+    }
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Route colors for different fleets */
+.route-colors {
+    --fleet-1: #4f46e5;
+    --fleet-2: #e11d48;
+    --fleet-3: #059669;
+    --fleet-4: #d97706;
+    --fleet-5: #7c3aed;
+}
+
+.route-flow {
+    animation: flowAnimation 1s linear infinite;
+}
+
+.route-segment {
+    stroke-width: 4;
+    stroke-linecap: round;
+    fill: none;
+    opacity: 0.8;
+}
+
+/* Fleet-specific route styles */
+.fleet-route-1 { stroke: var(--fleet-1); }
+.fleet-route-2 { stroke: var(--fleet-2); }
+.fleet-route-3 { stroke: var(--fleet-3); }
+.fleet-route-4 { stroke: var(--fleet-4); }
+.fleet-route-5 { stroke: var(--fleet-5); }
+
+/* Outlet marker styles */
+.outlet-marker {
+    @apply bg-indigo-600 text-white font-bold rounded-full shadow-lg;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+/* Fleet Summary Styles */
+.fleet-summary-grid {
+    @apply grid grid-cols-2 gap-4 mb-6;
+}
+
+.fleet-summary-card {
+    @apply bg-card p-6 rounded-lg border shadow-sm;
+}
+
+.fleet-summary-header {
+    @apply text-lg font-semibold text-card-foreground mb-4;
+}
+
+.fleet-stat-grid {
+    @apply grid grid-cols-2 gap-4;
+}
+
+.fleet-stat-card {
+    @apply bg-background p-4 rounded-lg border flex flex-col gap-2;
+}
+
+.fleet-stat-value {
+    @apply text-2xl font-bold text-primary;
+}
+
+.fleet-stat-label {
+    @apply text-sm text-muted-foreground;
+}
+
+/* Fleet marker styles */
+.fleet-icon {
+    font-size: 20px;
+    text-align: center;
+    line-height: 30px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.fleet-icon-maintenance {
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+/* Fleet circle styles */
+.fleet-circle-truck {
+    stroke: #4f46e5;
+    fill: #818cf8;
+    fill-opacity: 0.1;
+}
+
+.fleet-circle-van {
+    stroke: #e11d48;
+    fill: #fb7185;
+    fill-opacity: 0.1;
+}
+
+/* DataTables Styles */
+.dataTables_wrapper {
+    @apply bg-card rounded-lg border shadow-sm;
+}
+
+.dataTables_header {
+    @apply flex items-center justify-between p-4 border-b;
+}
+
+.dataTables_filter input {
+    @apply h-9 px-3 py-1 rounded-md border border-input bg-background text-sm 
+           ring-offset-background placeholder:text-muted-foreground
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+}
+
+.dataTables_length select {
+    @apply h-9 rounded-md border border-input bg-background px-3 py-1 text-sm
+           ring-offset-background focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-ring;
+}
+
+.dataTables_paginate {
+    @apply flex items-center gap-2;
+}
+
+.dataTables_paginate .paginate_button {
+    @apply px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50;
+}
+
+.dataTables_paginate .paginate_button.current {
+    @apply bg-indigo-500 text-white border-indigo-500 hover:bg-indigo-600;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+table.dataTable {
+    @apply w-full border-collapse;
+}
+
+table.dataTable thead th {
+    @apply bg-gray-50 text-left py-3 px-4 border-b border-gray-200 text-gray-600 font-semibold;
+}
+
+table.dataTable tbody td {
+    @apply py-3 px-4 border-b border-gray-100;
+}
+
+table.dataTable tbody tr:hover {
+    @apply bg-indigo-50;
+}
+
+/* Status badges */
+.status-badge {
+    @apply inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors
+           focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+}
+
+.status-badge.available {
+    @apply border-transparent bg-emerald-500/10 text-emerald-500 dark:bg-emerald-500/20;
+}
+
+.status-badge.busy {
+    @apply border-transparent bg-yellow-500/10 text-yellow-500 dark:bg-yellow-500/20;
+}
+
+.status-badge.maintenance {
+    @apply border-transparent bg-slate-500/10 text-slate-500 dark:bg-slate-500/20;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .dataTables_wrapper {
+        @apply p-3;
+    }
+    
+    table.dataTable thead th,
+    table.dataTable tbody td {
+        @apply py-2 px-3;
+    }
+}
+
+/* Route table styles */
+#routes-table {
+    @apply w-full border-collapse;
+}
+
+#routes-table thead th {
+    @apply bg-gray-50 text-left py-3 px-4 border-b border-gray-200 text-gray-600 font-semibold;
+}
+
+#routes-table tbody td {
+    @apply py-3 px-4 border-b border-gray-100;
+}
+
+.route-row {
+    @apply transition-colors duration-150;
+}
+
+.route-row:hover {
+    @apply bg-indigo-50;
+}
+
+.route-row.active {
+    @apply bg-indigo-50;
+}
+
+.order-details-table {
+    @apply w-full border-collapse bg-white rounded-lg overflow-hidden shadow-sm;
+}
+
+.order-details-table thead th {
+    @apply bg-gray-50 text-left py-2 px-3 text-sm text-gray-600 font-medium border-b border-gray-200;
+}
+
+.order-details-table tbody td {
+    @apply py-2 px-3 text-sm border-b border-gray-100;
+}
+
+/* Animation for expanding/collapsing details */
+.order-details-row {
+    @apply transition-all duration-300 ease-in-out;
+}
+
+.order-details-row:not(.hidden) {
+    animation: expand 0.3s ease-out;
+}
+
+@keyframes expand {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Update DataTables dark mode styles */
+.dark .dataTables_wrapper {
+    @apply bg-card text-card-foreground;
+}
+
+.dark .dataTables_filter input {
+    @apply bg-muted border-input text-foreground placeholder:text-muted-foreground;
+}
+
+.dark .dataTables_length select {
+    @apply bg-muted border-input text-foreground;
+}
+
+.dark .dataTables_paginate .paginate_button {
+    @apply border-muted text-foreground hover:bg-muted;
+}
+
+.dark .dataTables_paginate .paginate_button.current {
+    @apply bg-primary text-primary-foreground border-primary;
+}
+
+.dark table.dataTable thead th {
+    @apply bg-muted text-muted-foreground border-muted;
+}
+
+.dark table.dataTable tbody td {
+    @apply border-muted text-foreground;
+}
+
+.dark table.dataTable tbody tr:hover {
+    @apply bg-muted/50;
+}
+
+/* Update modal dark mode styles */
+.dark .modal-content {
+    @apply bg-card text-card-foreground;
+}
+
+/* Update route table dark mode styles */
+.dark #routes-table thead th {
+    @apply bg-muted text-muted-foreground border-muted;
+}
+
+.dark #routes-table tbody td {
+    @apply border-muted;
+}
+
+.dark .route-row:hover {
+    @apply bg-muted/50;
+}
+
+.dark .order-details-table {
+    @apply bg-card;
+}
+
+.dark .order-details-table thead th {
+    @apply bg-muted text-muted-foreground border-muted;
+}
+
+.dark .order-details-table tbody td {
+    @apply border-muted;
+}
+
+/* Update status badges for dark mode */
+.dark .status-badge {
+    @apply bg-opacity-20 border-opacity-20;
+}
+
+/* Update fleet summary cards for dark mode */
+.dark .fleet-summary-card {
+    @apply bg-card border border-muted;
+}
+
+.dark .fleet-count {
+    @apply text-primary;
+}
+
+.dark .fleet-label {
+    @apply text-muted-foreground;
+}
+
+/* Update message styles for dark mode */
+.dark .message.user {
+    @apply bg-primary/10;
+}
+
+.dark .message.ai {
+    @apply bg-muted;
+}
+
+.dark .message.system {
+    @apply bg-accent text-accent-foreground;
+}
+
+.dark .message.error {
+    @apply bg-destructive/10 text-destructive-foreground;
+}
+
+/* Update action button for dark mode */
+.dark .action-button {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+}
+
+/* Update map popup styles for dark mode */
+.dark .leaflet-popup-content-wrapper,
+.dark .leaflet-popup-tip {
+    @apply bg-card text-card-foreground;
+}
+
+.sequence-marker-highlight {
+    z-index: 1000;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.animate-pulse {
+    animation: pulse 1s infinite;
+} 
