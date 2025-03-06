@@ -17,22 +17,52 @@
             border-radius: 4px;
         }
         .message.user {
-            background-color: #e5e7eb;
+            background-color: #f3f4f6; /* gray-100 */
             margin-left: auto;
             max-width: 80%;
+            padding: 1rem;
+            border-radius: 0.5rem;
         }
         .message.ai {
-            background-color: #f3f4f6;
+            background-color: #e5e7eb; /* gray-200 */
             margin-right: auto;
             max-width: 80%;
+            padding: 1rem;
+            border-radius: 0.5rem;
         }
-        .message.system {
-            background-color: #dbeafe;
+        .message.system,
+        .message.success,
+        .message.error,
+        .message.info {
+            background-color: #eff6ff; /* blue-50 */
             text-align: center;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.5rem;
         }
-        .message.error {
-            background-color: #fee2e2;
-            text-align: center;
+
+        /* Add modal styles */
+        #routeDetailsModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+        }
+
+        #routeDetailsModal.active {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 80vw;
+            max-height: 80vh;
+            overflow: auto;
         }
     </style>
 </head>
@@ -43,6 +73,29 @@
             <div class="w-1/3 p-4 dark:bg-gray-900" id="chat-container"></div>
         </div>
     </div>
+
+    <!-- Update the modal HTML with fixed positioning and higher z-index -->
+    <div id="routeDetailsModal" class="fixed inset-0 bg-black/50 items-center justify-center z-[9999] hidden">
+        <div class="relative bg-white rounded-lg shadow-xl w-[80vw] max-h-[80vh] overflow-auto m-4">
+            <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                <h2 class="text-xl font-semibold">Fleet Details</h2>
+                <button id="closeRouteDetailsX" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="routeDetails" class="p-4">
+                <!-- Fleet details will be inserted here -->
+            </div>
+            <div class="sticky bottom-0 bg-white border-t p-4">
+                <button id="closeRouteDetails" class="w-full px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="/app.js"></script>
 </body>

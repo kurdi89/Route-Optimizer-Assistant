@@ -13,24 +13,77 @@ document.addEventListener('DOMContentLoaded', () => {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Add the route details modal HTML first
+    // Add this at the beginning of your file, right after the initial imports/setup
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `
+        .sequence-marker {
+            background: white;
+            border: 2px solid #4f46e5;
+            border-radius: 8px;
+            color: #4f46e5;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            left: -30px;  /* Move left */
+            top: -10px;   /* Move up */
+        }
+
+        .sequence-marker.sequence-outlet {
+            background: #4f46e5;
+            color: white;
+            border-color: white;
+        }
+
+        .sequence-marker.sequence-waypoint {
+            background: white;
+            color: #4f46e5;
+        }
+
+        .order-marker {
+            z-index: 1000 !important;
+        }
+
+        .sequence-marker {
+            z-index: 900 !important;
+        }
+
+        .outlet-marker {
+            z-index: 1000 !important;
+        }
+
+        /* Ensure popups are always on top */
+        .leaflet-popup {
+            z-index: 1100 !important;
+        }
+    `;
+    document.head.appendChild(styleTag);
+
+    // Update the route details modal HTML
     const routeDetailsModalHtml = `
-        <div id="routeDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden">
-            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-[80vw] max-h-[80vh] overflow-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold">Detailed Route Plan</h2>
+        <div id="routeDetailsModal" class="fixed inset-0 bg-black/50 items-center justify-center z-[9999] hidden">
+            <div class="relative bg-white rounded-lg shadow-xl w-[80vw] max-h-[80vh] overflow-auto m-4">
+                <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                    <h2 class="text-xl font-semibold">Route Details</h2>
                     <button id="closeRouteDetailsX" class="text-gray-500 hover:text-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
-                <div id="routeDetails" class="space-y-6">
+                <div id="routeDetails" class="p-4">
                     <!-- Route details will be inserted here -->
                 </div>
-                <button id="closeRouteDetails" class="mt-6 px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">
-                    Close
-                </button>
+                <div class="sticky bottom-0 bg-white border-t p-4">
+                    <button id="closeRouteDetails" class="w-full px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">
+                        Close
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -38,19 +91,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add the modal to the document body immediately
     document.body.insertAdjacentHTML('beforeend', routeDetailsModalHtml);
 
-    // Set up modal close handlers immediately
-    document.getElementById('closeRouteDetails').addEventListener('click', () => {
+    // Set up route details modal close handlers
+    document.getElementById('closeRouteDetails')?.addEventListener('click', () => {
         document.getElementById('routeDetailsModal').classList.add('hidden');
+        document.getElementById('routeDetailsModal').style.display = 'none';
     });
 
-    document.getElementById('closeRouteDetailsX').addEventListener('click', () => {
+    document.getElementById('closeRouteDetailsX')?.addEventListener('click', () => {
         document.getElementById('routeDetailsModal').classList.add('hidden');
+        document.getElementById('routeDetailsModal').style.display = 'none';
     });
 
-    // Add click outside to close
-    document.getElementById('routeDetailsModal').addEventListener('click', (e) => {
+    // Click outside to close route details modal
+    document.getElementById('routeDetailsModal')?.addEventListener('click', (e) => {
         if (e.target === document.getElementById('routeDetailsModal')) {
             e.target.classList.add('hidden');
+            e.target.style.display = 'none';
         }
     });
 
@@ -136,90 +192,49 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.body.appendChild(settingsModal);
 
-    // Add fleet modal
-    const fleetModal = document.createElement('div');
-    fleetModal.className = 'fixed inset-0 bg-black bg-opacity-50 z-[2000] hidden';
-    fleetModal.innerHTML = `
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-96">
-            <h2 class="text-lg font-semibold mb-4">🚚 Fleet Generation</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1">Number of Vehicles</label>
-                    <input type="number" id="fleetSize" value="10" min="1" max="50" 
-                           class="w-full rounded-md border p-2">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Vehicle Types</label>
-                    <div class="space-y-2">
-                        <label class="flex items-center">
-                            <input type="checkbox" checked class="mr-2" id="includeTrucks">
-                            🚛 Trucks (2000kg capacity)
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" checked class="mr-2" id="includeVans">
-                            🚐 Vans (1000kg capacity)
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button id="closeFleet" class="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Close</button>
-                <button id="generateFleet" class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">
-                    Generate Fleet
-                </button>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(fleetModal);
-
-    // Add custom marker icons
+    // Update the marker icons definition with improved popup handling
     const markerIcons = {
         order: L.divIcon({
             className: 'order-marker',
             html: `<div class="w-8 h-8 rounded-full bg-white border-2 border-blue-500 flex items-center justify-center">📦</div>`,
             iconSize: [32, 32],
-            iconAnchor: [16, 16]
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]  // Position popup above the marker
         }),
         vehicle: L.divIcon({
             className: 'vehicle-marker',
             html: `<div class="w-8 h-8 rounded-full bg-white border-2 border-green-500 flex items-center justify-center">🚚</div>`,
             iconSize: [32, 32],
-            iconAnchor: [16, 16]
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
         }),
         outlet: L.divIcon({
             className: 'outlet-marker',
             html: `<div class="w-8 h-8 rounded-full bg-white border-2 border-red-500 flex items-center justify-center">🏪</div>`,
             iconSize: [32, 32],
-            iconAnchor: [16, 16]
+            iconAnchor: [16, 16],
+            popupAnchor: [0, -16]
         })
     };
 
     // Initialize chat panel with better styling
     const chatContainer = document.getElementById('chat-container');
     chatContainer.innerHTML = `
-        <div class="flex flex-col bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 shadow-sm h-full">
-            <div class="border-b dark:border-gray-700 p-3 flex items-center justify-between">
+        <div class="flex flex-col bg-white rounded-lg border border-gray-200 shadow-sm h-full">
+            <div class="border-b border-gray-200 p-3 flex items-center justify-between">
                 <div class="flex items-center gap-2">
                     <div class="text-2xl">🤖</div>
-                    <div class="font-semibold text-gray-900 dark:text-gray-100">Route Optimizer Assistant</div>
+                    <div class="font-semibold text-gray-900">Route Optimizer Assistant</div>
                 </div>
-                <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    <svg id="lightIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                    <svg id="darkIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
             </div>
-            <div class="flex-1 p-4 space-y-4 overflow-auto bg-white dark:bg-gray-800" id="messages"></div>
-            <div class="border-t dark:border-gray-700 p-4 space-y-2 bg-white dark:bg-gray-800">
+            <div class="flex-1 p-4 space-y-4 overflow-auto bg-white" id="messages"></div>
+            <div class="border-t border-gray-200 p-4 space-y-2 bg-white">
                 <textarea 
                     id="userMessage"
                     placeholder="Type your message... (e.g., 'plan routes')"
-                    class="min-h-[60px] w-full rounded-md border dark:border-gray-600 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                    class="min-h-[60px] w-full rounded-md border border-gray-200 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-900 placeholder-gray-500"
                 ></textarea>
-                <button id="sendButton" class="w-full bg-blue-500 dark:bg-blue-600 text-white rounded-md py-2 hover:bg-blue-600 dark:hover:bg-blue-700 transition-colors">
+                <button id="sendButton" class="w-full bg-blue-500 text-white rounded-md py-2 hover:bg-blue-600 transition-colors">
                     Send
                 </button>
             </div>
@@ -419,27 +434,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function addMessage(type, content) {
-        const messagesContainer = document.getElementById('messages');
+    function addMessage(type, content, action = null) {
+        const messagesDiv = document.getElementById('messages');
         const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type} rounded-lg p-4 text-sm animate-fade-in`;
         
-        const icon = messageIcons[type] || '';
+        const classes = {
+            user: 'ml-auto bg-gray-100 text-gray-900',
+            ai: 'mr-auto bg-gray-200 text-gray-900',
+            system: 'mx-auto bg-blue-50 text-blue-900',
+            error: 'mx-auto bg-red-50 text-red-900',
+            success: 'mx-auto bg-blue-50 text-blue-900'
+        };
         
-        if (type === 'success' && content.includes('Route Summary')) {
-            messageDiv.innerHTML = `
-                ${icon} ${content}
-                <button onclick="window.showRouteDetails()" 
-                        class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors w-full">
-                    View Detailed Route Plan
-                </button>
-            `;
-        } else {
-            messageDiv.innerHTML = `${icon} ${content}`;
+        messageDiv.className = `message ${type} p-4 rounded-lg max-w-[80%] ${classes[type]}`;
+        
+        // Create text content
+        const textElement = document.createElement('div');
+        textElement.className = 'mb-2';
+        textElement.textContent = content;
+        messageDiv.appendChild(textElement);
+        
+        // Add action button if provided
+        if (action) {
+            const button = document.createElement('button');
+            button.className = 'mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors w-full';
+            button.textContent = action.text;
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                action.onClick();
+            });
+            messageDiv.appendChild(button);
         }
         
-        messagesContainer.appendChild(messageDiv);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
     function showRouteSummary(routePlan) {
@@ -517,12 +546,20 @@ document.addEventListener('DOMContentLoaded', () => {
                         const isOutlet = idx === 0 || idx === route.waypoints.length - 1;
                         const icon = L.divIcon({
                             className: 'custom-div-icon',
-                            html: `<div class='marker-pin ${isOutlet ? 'outlet' : 'waypoint'}'>${idx + 1}</div>`,
+                            html: `
+                                <div class='sequence-marker ${isOutlet ? 'sequence-outlet' : 'sequence-waypoint'}'>
+                                    <span>${idx + 1}</span>
+                                </div>
+                            `,
                             iconSize: [30, 30],
-                            iconAnchor: [15, 15]
+                            iconAnchor: [15, 15],
+                            popupAnchor: [0, -16]  // Position popup above the marker
                         });
 
-                        L.marker([wp.location.lat, wp.location.lng], { icon }).addTo(map);
+                        const sequenceMarker = L.marker([wp.location.lat, wp.location.lng], { 
+                            icon,
+                            interactive: false  // Make sequence markers non-interactive
+                        }).addTo(map);
                     });
 
                     // Add route info popup
@@ -548,6 +585,61 @@ document.addEventListener('DOMContentLoaded', () => {
             );
             map.fitBounds(allPoints);
         }
+
+        // Add success message with route details button after drawing routes
+        addMessage('success', `Routes planned successfully!\n• Total Routes: ${routePlan.routes.length}\n• Total Distance: ${routePlan.totalDistance.toFixed(2)} km\n• Total Duration: ${routePlan.totalDuration} minutes`, {
+            text: 'View Route Details',
+            onClick: () => {
+                const modal = document.getElementById('routeDetailsModal');
+                const detailsContainer = document.getElementById('routeDetails');
+                
+                detailsContainer.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 p-4 rounded">
+                            <h3 class="font-semibold text-lg mb-2">Route Summary</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p><strong>Total Routes:</strong> ${routePlan.routes.length}</p>
+                                    <p><strong>Total Distance:</strong> ${routePlan.totalDistance.toFixed(2)} km</p>
+                                </div>
+                                <div>
+                                    <p><strong>Total Duration:</strong> ${routePlan.totalDuration} minutes</p>
+                                    <p><strong>Total Deliveries:</strong> ${routePlan.routes.reduce((acc, route) => acc + route.deliveries.length, 0)}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            ${routePlan.routes.map((route, idx) => `
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <h4 class="font-semibold">Route ${idx + 1}</h4>
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                                            ${route.deliveries.length} stops
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                            <p><strong>Vehicle:</strong> ${route.vehicle.fleet_id}</p>
+                                            <p><strong>Type:</strong> ${route.vehicle.vehicle_type}</p>
+                                            <p><strong>Distance:</strong> ${route.distance.toFixed(2)} km</p>
+                                        </div>
+                                        <div>
+                                            <p><strong>Duration:</strong> ${route.duration} minutes</p>
+                                            <p><strong>Load:</strong> ${route.load_kg} kg</p>
+                                            <p><strong>Capacity:</strong> ${route.vehicle.capacity_kg} kg</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+            }
+        });
     }
 
     // Event handlers
@@ -600,107 +692,165 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Add fleet generation handler
-    fleetButton.addEventListener('click', () => {
-        fleetModal.classList.remove('hidden');
+    // First, create both modals
+    const fleetModalHTML = `
+        <div id="fleetModal" class="fixed inset-0 bg-black/50 z-[2000] hidden">
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-96">
+                <h2 class="text-lg font-semibold mb-4">🚚 Generate Fleet</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Number of Vehicles</label>
+                        <input type="number" id="fleetSize" value="10" min="1" max="50" 
+                               class="w-full rounded-md border p-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Vehicle Types</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2" id="includeTrucks">
+                                🚛 Trucks (2000kg capacity)
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" checked class="mr-2" id="includeVans">
+                                🚐 Vans (1000kg capacity)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-2">
+                    <button id="closeFleet" class="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Cancel</button>
+                    <button id="generateFleet" class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const ordersModalHTML = `
+        <div id="ordersModal" class="fixed inset-0 bg-black/50 z-[2000] hidden">
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg p-6 w-96">
+                <h2 class="text-lg font-semibold mb-4">📦 Generate Orders</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Number of Orders</label>
+                        <input type="number" id="ordersSize" value="20" min="1" max="1000" 
+                               class="w-full rounded-md border p-2">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-2">
+                    <button id="closeOrders" class="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Cancel</button>
+                    <button id="generateOrders" class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600">
+                        Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modals to document
+    document.body.insertAdjacentHTML('beforeend', fleetModalHTML);
+    document.body.insertAdjacentHTML('beforeend', ordersModalHTML);
+
+    // Update the existing button click handlers
+    // Remove existing click handlers
+    fleetButton.replaceWith(fleetButton.cloneNode(true));
+    generateButton.replaceWith(generateButton.cloneNode(true));
+
+    // Get fresh references to the buttons
+    const newFleetButton = document.querySelector('button:has(svg path[d*="M8 7h12m0"])');
+    const newGenerateButton = document.querySelector('button:has(svg path[d*="M12 9v3m0"])');
+
+    // Add new click handlers
+    newFleetButton.addEventListener('click', () => {
+        const modal = document.getElementById('fleetModal');
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
     });
 
-    document.getElementById('closeFleet').addEventListener('click', () => {
-        fleetModal.classList.add('hidden');
+    newGenerateButton.addEventListener('click', () => {
+        const modal = document.getElementById('ordersModal');
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
     });
 
-    // Update fleet generation handler
+    // Rest of the modal handlers...
+    // [Previous event handlers for close buttons, generate buttons, etc. remain the same]
+
+    // Generate fleet handler
     document.getElementById('generateFleet').addEventListener('click', async () => {
-        try {
-            const button = document.getElementById('generateFleet');
-            button.disabled = true;
-            button.textContent = 'Generating...';
+        const modal = document.getElementById('fleetModal');
+        const fleetSize = parseInt(document.getElementById('fleetSize').value);
+        const includeTrucks = document.getElementById('includeTrucks').checked;
+        const includeVans = document.getElementById('includeVans').checked;
 
-            const fleetSize = document.getElementById('fleetSize').value;
-            const includeTrucks = document.getElementById('includeTrucks').checked;
-            const includeVans = document.getElementById('includeVans').checked;
+        try {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
 
             const response = await fetch('/api/generate-fleet', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    size: parseInt(fleetSize),
-                    includeTrucks,
-                    includeVans
+                body: JSON.stringify({ size: fleetSize, includeTrucks, includeVans })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                handleFleetGeneration(data);
+            }
+        } catch (error) {
+            console.error('Error generating fleet:', error);
+            addMessage('error', 'Failed to generate fleet. Please try again.');
+        }
+    });
+
+    // Generate orders handler
+    document.getElementById('generateOrders').addEventListener('click', async () => {
+        const modal = document.getElementById('ordersModal');
+        const ordersSize = parseInt(document.getElementById('ordersSize').value);
+
+        try {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+
+            const response = await fetch('/api/generate-orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    count: ordersSize,
+                    bounds: {
+                        north: 24.8500,
+                        south: 24.5500,
+                        east: 46.8500,
+                        west: 46.5500
+                    }
                 })
             });
 
             const data = await response.json();
             if (data.success) {
-                // Clear existing fleet markers
-                if (window.fleetMarkers) {
-                    window.fleetMarkers.forEach(marker => marker.remove());
+                // Clear existing markers
+                if (markers.length > 0) {
+                    markers.forEach(marker => marker.remove());
+                    markers = [];
                 }
-                window.fleetMarkers = [];
 
-                // Clear existing outlet markers
-                if (window.outletMarkers) {
-                    window.outletMarkers.forEach(marker => marker.remove());
-                }
-                window.outletMarkers = [];
-
-                // Add outlet markers
-                data.outlets.forEach(outlet => {
-                    const marker = L.marker([outlet.latitude, outlet.longitude], {
-                        icon: markerIcons.outlet
-                    }).bindPopup(`
-                        <div class="p-2">
-                            <div class="font-semibold">${outlet.name}</div>
-                            <div class="text-sm text-gray-600">
-                                Vehicles: ${data.fleets.filter(f => f.outlet_id === outlet.id).length}
-                            </div>
-                        </div>
-                    `).addTo(map);
-                    window.outletMarkers.push(marker);
-
-                    // Add vehicle markers for this outlet
-                    data.fleets.filter(f => f.outlet_id === outlet.id).forEach(vehicle => {
-                        const marker = L.marker([vehicle.current_latitude, vehicle.current_longitude], {
-                            icon: markerIcons.vehicle
-                        }).bindPopup(`
-                            <div class="p-2">
-                                <div class="font-semibold">${vehicle.fleet_id}</div>
-                                <div class="text-sm text-gray-600">
-                                    Type: ${vehicle.vehicle_type}<br>
-                                    Status: ${vehicle.status}<br>
-                                    Capacity: ${vehicle.capacity_kg}kg
-                                </div>
-                            </div>
-                        `).addTo(map);
-                        window.fleetMarkers.push(marker);
-                    });
+                // Add new markers
+                data.orders.forEach(order => {
+                    const marker = createOrderMarker(order);
+                    marker.addTo(map);
+                    markers.push(marker);
                 });
 
-                fleetModal.classList.add('hidden');
-                addMessage('success', `🚚 Generated fleet of ${data.fleets.length} vehicles:`);
-                addMessage('info', `
-                    🚛 Trucks: ${data.distribution.trucks}
-                    🚐 Vans: ${data.distribution.vans}
-                    ✅ Available: ${data.distribution.available}
-                    🔧 Maintenance: ${data.distribution.maintenance}
-                `);
+                addMessage('success', `📦 Generated ${data.orders.length} orders`);
 
                 // Fit map to show all markers
-                const bounds = L.latLngBounds([
-                    ...data.outlets.map(o => [o.latitude, o.longitude]),
-                    ...data.fleets.map(f => [f.current_latitude, f.current_longitude])
-                ]);
-                map.fitBounds(bounds, { padding: [50, 50] });
-            } else {
-                addMessage('error', data.error || '❌ Failed to generate fleet');
+                const markerBounds = L.latLngBounds(markers.map(m => m.getLatLng()));
+                map.fitBounds(markerBounds, { padding: [50, 50] });
             }
         } catch (error) {
-            console.error('Error generating fleet:', error);
-            addMessage('error', '❌ Failed to generate fleet');
-        } finally {
-            const button = document.getElementById('generateFleet');
-            button.disabled = false;
-            button.textContent = 'Generate Fleet';
+            console.error('Error generating orders:', error);
+            addMessage('error', 'Failed to generate orders. Please try again.');
         }
     });
 
@@ -755,7 +905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSettings();
 
     // Add click outside to close modals
-    [settingsModal, fleetModal].forEach(modal => {
+    [settingsModal].forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.classList.add('hidden');
@@ -763,245 +913,123 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // First, define showRouteDetails before adding the click handler
-    window.showRouteDetails = function() {
-        const routeDetailsModal = document.getElementById('routeDetailsModal');
-        const detailsContainer = document.getElementById('routeDetails');
-        if (!window.currentRoutePlan) {
-            console.log('No route plan available');
-            return;
-        }
+    // Store the current fleet data globally
+    window.currentFleetData = null;
 
-        // Calculate total value from all deliveries
-        const totalValue = window.currentRoutePlan.routes.reduce((sum, route) => 
-            sum + route.deliveries.reduce((routeSum, delivery) => 
-                routeSum + (Number(delivery.order_value) || 0), 0
-            ), 0
-        );
-
-        let html = `
-            <div class="mb-4 p-4 bg-blue-50 rounded">
-                <h3 class="font-semibold text-xl mb-2">Fleet Summary</h3>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <p><strong>Available Vehicles:</strong> ${window.currentRoutePlan.available_fleet || window.currentRoutePlan.availableFleet} vehicles</p>
-                        <p><strong>Total Routes:</strong> ${window.currentRoutePlan.routes.length}</p>
-                        <p><strong>Total Distance:</strong> ${(window.currentRoutePlan.total_distance || window.currentRoutePlan.totalDistance).toFixed(2)} km</p>
-                        <p><strong>Total Orders:</strong> ${window.currentRoutePlan.routes.reduce((sum, r) => sum + (r.deliveries?.length || 0), 0)}</p>
-                    </div>
-                    <div>
-                        <p><strong>Total Duration:</strong> ${window.currentRoutePlan.total_duration || window.currentRoutePlan.totalDuration} minutes</p>
-                        <p><strong>Total Value:</strong> ${totalValue.toLocaleString('en-SA', { 
-                            style: 'currency', 
-                            currency: 'SAR'
-                        })}</p>
-                        <p><strong>Average Value/Route:</strong> ${(totalValue / window.currentRoutePlan.routes.length).toLocaleString('en-SA', {
-                            style: 'currency',
-                            currency: 'SAR'
-                        })}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        window.currentRoutePlan.routes.forEach((route, idx) => {
-            // Calculate route value from its deliveries
-            const routeValue = route.deliveries.reduce((sum, delivery) => 
-                sum + (Number(delivery.order_value) || 0), 0
-            );
-
-            // Get outlet info from the start waypoint or route data
-            const startWaypoint = route.waypoints.find(wp => wp.type === 'start');
-            const outlet = {
-                name: route.outlet?.name || startWaypoint?.outlet_name || 'North Outlet',
-                latitude: route.outlet?.latitude || startWaypoint?.location?.lat || 24.8974,
-                longitude: route.outlet?.longitude || startWaypoint?.location?.lng || 46.6269
-            };
-
-            html += `
-                <div class="border rounded-lg p-4 mb-4">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="font-semibold text-lg">Route ${idx + 1}</h3>
-                        <button onclick="showRouteOnMap(${idx})" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-                            Show on Map
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <p><strong>Vehicle:</strong> ${route.vehicle.fleet_id}</p>
-                            <p><strong>Type:</strong> ${route.vehicle.vehicle_type}</p>
-                            <p><strong>Distance:</strong> ${route.distance.toFixed(2)} km</p>
-                            <p><strong>Duration:</strong> ${route.duration} min</p>
-                            <p><strong>Total Value:</strong> ${routeValue.toLocaleString('en-SA', { 
-                                style: 'currency', 
-                                currency: 'SAR'
-                            })}</p>
+    function handleFleetGeneration(fleetData) {
+        // Store the fleet data globally
+        window.currentFleetData = {
+            trucks: fleetData.distribution.trucks,
+            vans: fleetData.distribution.vans,
+            available: fleetData.distribution.available,
+            maintenance: fleetData.distribution.maintenance,
+            vehicles: fleetData.fleets
+        };
+        
+        // Add message with button
+        addMessage('success', `Fleet generated successfully! 🚛\n
+• Total Vehicles: ${fleetData.distribution.trucks + fleetData.distribution.vans}
+• Trucks: ${fleetData.distribution.trucks} 🚛
+• Vans: ${fleetData.distribution.vans} 🚐
+• Available: ${fleetData.distribution.available} ✅
+• In Maintenance: ${fleetData.distribution.maintenance} 🔧`, {
+            text: 'View Fleet Details',
+            onClick: () => {
+                // First, ensure the modal exists
+                if (!document.getElementById('fleetDetailsModal')) {
+                    const modalHTML = `
+                        <div id="fleetDetailsModal" class="fixed inset-0 bg-black/50 items-center justify-center z-[9999] hidden">
+                            <div class="relative bg-white rounded-lg shadow-xl w-[80vw] max-h-[80vh] overflow-auto m-4">
+                                <div class="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                                    <h2 class="text-xl font-semibold">Fleet Details</h2>
+                                    <button id="closeFleetDetailsX" class="text-gray-500 hover:text-gray-700">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div id="fleetDetails" class="p-4">
+                                    <!-- Fleet details will be inserted here -->
+                                </div>
+                                <div class="sticky bottom-0 bg-white border-t p-4">
+                                    <button id="closeFleetDetails" class="w-full px-4 py-2 bg-gray-100 rounded hover:bg-gray-200">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <p><strong>Deliveries:</strong> ${route.deliveries.length}</p>
-                            <p><strong>Status:</strong> ${route.vehicle.status}</p>
-                            <p><strong>Capacity:</strong> ${route.vehicle.capacity_kg}kg</p>
-                            <p><strong>Starting Outlet:</strong> ${outlet.name}</p>
-                            <p><strong>Outlet Location:</strong> (${outlet.latitude.toFixed(4)}, ${outlet.longitude.toFixed(4)})</p>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+                    // Add event listeners for the new modal
+                    document.getElementById('closeFleetDetails').addEventListener('click', () => {
+                        document.getElementById('fleetDetailsModal').classList.add('hidden');
+                        document.getElementById('fleetDetailsModal').style.display = 'none';
+                    });
+
+                    document.getElementById('closeFleetDetailsX').addEventListener('click', () => {
+                        document.getElementById('fleetDetailsModal').classList.add('hidden');
+                        document.getElementById('fleetDetailsModal').style.display = 'none';
+                    });
+
+                    document.getElementById('fleetDetailsModal').addEventListener('click', (e) => {
+                        if (e.target === document.getElementById('fleetDetailsModal')) {
+                            e.target.classList.add('hidden');
+                        }
+                    });
+                }
+
+                const modal = document.getElementById('fleetDetailsModal');
+                const detailsContainer = document.getElementById('fleetDetails');
+                
+                detailsContainer.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="bg-blue-50 p-4 rounded">
+                            <h3 class="font-semibold text-lg mb-2">Fleet Summary</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p><strong>Total Vehicles:</strong> ${fleetData.distribution.trucks + fleetData.distribution.vans}</p>
+                                    <p><strong>Trucks:</strong> ${fleetData.distribution.trucks}</p>
+                                    <p><strong>Vans:</strong> ${fleetData.distribution.vans}</p>
+                                </div>
+                                <div>
+                                    <p><strong>Available:</strong> ${fleetData.distribution.available}</p>
+                                    <p><strong>In Maintenance:</strong> ${fleetData.distribution.maintenance}</p>
+                                    <p><strong>Utilization:</strong> ${((fleetData.distribution.available / (fleetData.distribution.trucks + fleetData.distribution.vans)) * 100).toFixed(1)}%</p>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="font-medium mb-2">Delivery Sequence:</h4>
-                        <div class="space-y-2">
-                            ${route.waypoints.map((wp, i) => {
-                                const delivery = route.deliveries.find(d => 
-                                    d.latitude === wp.location.lat && 
-                                    d.longitude === wp.location.lng
-                                );
-                                return `
-                                    <div class="flex items-center gap-2 p-3 ${i % 2 === 0 ? 'bg-gray-50' : ''} rounded">
-                                        <span class="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-sm">
-                                            ${i + 1}
-                                        </span>
-                                        <div class="flex-1">
-                                            <div class="flex justify-between items-center">
-                                                <span class="font-medium">
-                                                    ${wp.type === 'delivery' ? 'Delivery Point' : wp.type.charAt(0).toUpperCase() + wp.type.slice(1)}
-                                                </span>
-                                                ${wp.type === 'delivery' && delivery ? `
-                                                    <span class="text-green-600 font-medium">${Number(delivery.order_value).toLocaleString('en-SA', { 
-                                                        style: 'currency', 
-                                                        currency: 'SAR'
-                                                    })}</span>
-                                                ` : ''}
-                                            </div>
-                                            ${delivery ? `
-                                                <div class="text-sm text-gray-600 mt-1">
-                                                    <p><strong>Order ID:</strong> ${delivery.order_id}</p>
-                                                    ${delivery.customer_name ? `<p><strong>Customer:</strong> ${delivery.customer_name}</p>` : ''}
-                                                    ${delivery.customer_address ? `<p><strong>Address:</strong> ${delivery.customer_address}</p>` : ''}
-                                                    ${delivery.is_vip ? '<p class="text-yellow-600 font-medium">🌟 VIP Customer</p>' : ''}
-                                                    <p><strong>Location:</strong> (${wp.location.lat.toFixed(4)}, ${wp.location.lng.toFixed(4)})</p>
-                                                    <p><strong>Order Value:</strong> ${Number(delivery.order_value).toLocaleString('en-SA', {
-                                                        style: 'currency',
-                                                        currency: 'SAR'
-                                                    })}</p>
-                                                </div>
-                                            ` : wp.type === 'start' ? `
-                                                <div class="text-sm text-gray-600 mt-1">
-                                                    <p><strong>Starting from:</strong> ${outlet.name}</p>
-                                                    <p><strong>Location:</strong> (${wp.location.lat.toFixed(4)}, ${wp.location.lng.toFixed(4)})</p>
-                                                </div>
-                                            ` : wp.type === 'end' ? `
-                                                <div class="text-sm text-gray-600 mt-1">
-                                                    <p><strong>Returning to:</strong> ${outlet.name}</p>
-                                                    <p><strong>Location:</strong> (${wp.location.lat.toFixed(4)}, ${wp.location.lng.toFixed(4)})</p>
-                                                </div>
-                                            ` : ''}
+
+                        <div class="border rounded-lg p-4">
+                            <h3 class="font-semibold text-lg mb-3">Vehicle Details</h3>
+                            <div class="space-y-3">
+                                ${fleetData.fleets.map((vehicle, idx) => `
+                                    <div class="p-3 ${idx % 2 === 0 ? 'bg-gray-50' : ''} rounded">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-medium">
+                                                ${vehicle.vehicle_type === 'TRUCK' ? '🚛' : '🚐'} ${vehicle.fleet_id}
+                                            </span>
+                                            <span class="px-2 py-1 rounded text-sm ${
+                                                vehicle.status === 'AVAILABLE' ? 'bg-green-100 text-green-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                            }">
+                                                ${vehicle.status}
+                                            </span>
+                                        </div>
+                                        <div class="text-sm text-gray-600 mt-1">
+                                            <p><strong>Type:</strong> ${vehicle.vehicle_type}</p>
+                                            <p><strong>Capacity:</strong> ${vehicle.capacity_kg}kg</p>
                                         </div>
                                     </div>
-                                `;
-                            }).join('')}
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+            }
         });
-
-        detailsContainer.innerHTML = html;
-        routeDetailsModal.classList.remove('hidden');
-    };
-
-    // Add the showRouteOnMap function that combines closing modal and highlighting route
-    window.showRouteOnMap = function(routeIndex) {
-        document.getElementById('routeDetailsModal').classList.add('hidden');
-        window.highlightRoute(routeIndex);
-    };
-
-    // Add function to highlight route on map
-    window.highlightRoute = function(routeIndex) {
-        const route = window.currentRoutePlan.routes[routeIndex];
-        if (!route) return;
-
-        // Reset all routes to normal style
-        window.currentRoutes.forEach(r => {
-            r.setStyle({
-                weight: 4,
-                opacity: 0.8
-            });
-        });
-
-        // Highlight selected route
-        window.currentRoutes[routeIndex].setStyle({
-            weight: 6,
-            opacity: 1
-        });
-
-        // Zoom to route bounds
-        const routePoints = route.waypoints.map(wp => [wp.location.lat, wp.location.lng]);
-        map.fitBounds(routePoints);
-
-        // Flash sequence markers
-        route.waypoints.forEach((wp, idx) => {
-            const marker = L.marker([wp.location.lat, wp.location.lng], {
-                icon: L.divIcon({
-                    className: 'sequence-marker-highlight',
-                    html: `<div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold animate-pulse">
-                        ${idx + 1}
-                    </div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16]
-                })
-            }).addTo(map);
-
-            // Remove highlight after 3 seconds
-            setTimeout(() => marker.remove(), 3000);
-        });
-    };
-
-    // Add theme toggle button next to the assistant title
-    const headerDiv = document.querySelector('.border-b');
-    headerDiv.className = 'border-b p-3 flex items-center justify-between';
-    headerDiv.innerHTML = `
-        <div class="flex items-center gap-2">
-            <div class="text-2xl">🤖</div>
-            <div class="font-semibold">Route Optimizer Assistant</div>
-        </div>
-        <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <svg id="lightIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-            </svg>
-            <svg id="darkIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-            </svg>
-        </button>
-    `;
-
-    // Add theme toggle functionality
-    const themeToggle = document.getElementById('themeToggle');
-    const lightIcon = document.getElementById('lightIcon');
-    const darkIcon = document.getElementById('darkIcon');
-
-    // Function to update theme
-    function updateTheme(isDark) {
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-            lightIcon.classList.remove('hidden');
-            darkIcon.classList.add('hidden');
-            updateMapStyle('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            lightIcon.classList.add('hidden');
-            darkIcon.classList.remove('hidden');
-            updateMapStyle('streets');
-        }
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
-
-    // Initialize theme
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const savedTheme = localStorage.getItem('theme');
-    const isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
-    updateTheme(isDark);
-
-    // Theme toggle event listener
-    themeToggle.addEventListener('click', () => {
-        const isDark = !document.documentElement.classList.contains('dark');
-        updateTheme(isDark);
-    });
-}); 
+});

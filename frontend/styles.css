@@ -121,17 +121,17 @@ body {
 
 /* Chat container */
 #chat-container {
-    @apply bg-white dark:bg-gray-900;
+    @apply bg-white;
 }
 
 /* Main chat window */
 .chat-window {
-    @apply bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700;
+    @apply bg-white rounded-lg border border-gray-200;
 }
 
 /* Messages container */
 #messages {
-    @apply bg-white dark:bg-gray-800 space-y-4 p-4 overflow-auto;
+    @apply bg-white space-y-4 p-4 overflow-auto;
 }
 
 /* Base message styles */
@@ -141,64 +141,63 @@ body {
 
 /* User messages */
 .message.user {
-    @apply bg-blue-50 dark:bg-blue-900/30 
-           text-blue-900 dark:text-blue-100
+    @apply bg-gray-100 
+           text-gray-900
            ml-auto max-w-[80%];
 }
 
 /* AI/Assistant messages */
 .message.ai {
-    @apply bg-gray-50 dark:bg-gray-700/50
-           text-gray-900 dark:text-gray-100
+    @apply bg-gray-200
+           text-gray-900
            mr-auto max-w-[80%];
 }
 
 /* System messages */
 .message.system {
-    @apply bg-indigo-50 dark:bg-indigo-900/30
-           text-indigo-900 dark:text-indigo-100
+    @apply bg-blue-50
+           text-blue-900
            text-center font-medium w-full;
 }
 
 /* Success messages */
 .message.success {
-    @apply bg-emerald-50 dark:bg-emerald-900/30
-           text-emerald-900 dark:text-emerald-100
+    @apply bg-blue-50
+           text-blue-900
            text-center font-medium w-full;
 }
 
 /* Error messages */
 .message.error {
-    @apply bg-red-50 dark:bg-red-900/30
-           text-red-900 dark:text-red-100
+    @apply bg-blue-50
+           text-blue-900
            text-center font-medium w-full;
 }
 
 /* Info messages */
 .message.info {
-    @apply bg-sky-50 dark:bg-sky-900/30
-           text-sky-900 dark:text-sky-100
+    @apply bg-blue-50
+           text-blue-900
            text-center font-medium w-full;
 }
 
 /* Input area */
 .input-area {
-    @apply border-t dark:border-gray-700 p-4 bg-white dark:bg-gray-800;
+    @apply border-t border-gray-200 p-4 bg-white;
 }
 
 /* Message input */
 textarea {
-    @apply bg-gray-50 dark:bg-gray-700
-           border border-gray-200 dark:border-gray-600
-           text-gray-900 dark:text-gray-100
-           placeholder-gray-500 dark:placeholder-gray-400
+    @apply bg-white
+           border border-gray-200
+           text-gray-900
+           placeholder-gray-500
            rounded-lg p-3 w-full focus:ring-2 focus:ring-blue-500;
 }
 
 /* Send button */
 #sendButton {
     @apply bg-blue-500 hover:bg-blue-600
-           dark:bg-blue-600 dark:hover:bg-blue-700
            text-white font-medium
            rounded-lg py-2 px-4 w-full
            transition-colors;

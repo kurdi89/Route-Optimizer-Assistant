@@ -266,6 +266,7 @@ async function handleConversation(req, res) {
                 }
             };
             console.log('Response:', response);
+            console.log('Routes:', response.routePlan.routes);
             return res.json(response);
         }
 
