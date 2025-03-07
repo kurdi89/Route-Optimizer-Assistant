@@ -10,9 +10,7 @@ An intelligent route optimization system powered by AI models through OpenRouter
 - 🗺️ Real-time route visualization on interactive maps
 - 📦 Multiple distribution centers support
 - 🚚 Fleet management system
-- ⏱️ Time window and priority-based delivery planning
 - 💾 SQLite database for data persistence
-- 🔄 Real-time updates and status tracking
 
 ## Prerequisites
 
